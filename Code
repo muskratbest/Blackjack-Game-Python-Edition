@@ -31,7 +31,6 @@ ab = (0, 0, 175)
 global numofdecks2
 numofdecks2 = 6
 
-
 def Shuffle(numofdecks, RunningCount):
     Jack = 10
     Queen = 10
@@ -71,7 +70,7 @@ def PlayAgain(Deck, numofdecks, RunningCount, dim):
 
     Deck[First_Card_Index] = 0
 
-    Dealer_Card_Index = random.randrange(0, len(Deck), 1)
+    Dealer_Card_Index = 50 #random.randrange(0, len(Deck), 1)
     Dealer_Card = Deck[Dealer_Card_Index]
     while Dealer_Card == 0:
         if Dealer_Card == 0:
@@ -107,7 +106,7 @@ def PlayAgain(Deck, numofdecks, RunningCount, dim):
 
     Deck[Second_Card_Index] = 0
 
-    Second_Dealer_Card_Index = random.randrange(0, len(Deck), 1)
+    Second_Dealer_Card_Index = 51# random.randrange(0, len(Deck), 1)
     Second_Dealer_Card = Deck[Second_Dealer_Card_Index]
     while Second_Dealer_Card == 0:
         if Second_Dealer_Card == 0:
@@ -471,9 +470,10 @@ def Blackjack():
                         Your_Sum = Your_Sum1
                     dcards.add(scnddcard)
                     dcards.remove(cardback)
-                    Dealer_Sum, Deck, Next_Dealer_Card, CardFaceDealerNext, Tot_Next_Dealer_Card, RunningCount = \
-                        Dealer(Dealer_Card, Second_Dealer_Card, Next_Dealer_Card, Tot_Next_Dealer_Card, Deck, numofdecks,
-                               Your_Sum, RunningCount, biteme, dim)
+                    if BlackjackFlag == 0:
+                        Dealer_Sum, Deck, Next_Dealer_Card, CardFaceDealerNext, Tot_Next_Dealer_Card, RunningCount = \
+                            Dealer(Dealer_Card, Second_Dealer_Card, Next_Dealer_Card, Tot_Next_Dealer_Card, Deck, numofdecks,
+                                   Your_Sum, RunningCount, biteme, dim)
                     if First_Card1 != 0:
                         win_loss_ratio, status = DidYouWin(Your_Sum1, Dealer_Sum, win_loss_ratio, BlackjackFlag)
                     if First_Card2 != 0:
@@ -655,6 +655,10 @@ def Dealer(Dealer_Card, Second_Dealer_Card, Next_Dealer_Card, Tot_Next_Dealer_Ca
     else:
         soft17 = 0
 
+    if Dealer_Card == 11 and Second_Dealer_Card == 11:
+        Dealer_Card, Second_Dealer_Card, Next_Dealer_Card, Tot_Next_Dealer_Card, Dealer_Sum, biteme = SomeoneHasAce(
+            Dealer_Card, Second_Dealer_Card, Next_Dealer_Card, Tot_Next_Dealer_Card, Dealer_Sum, biteme)
+
     while Dealer_Sum < 17 and Your_Sum < 22 or soft17 == 1 and Your_Sum < 22:
         Next_Dealer_Card_Index = random.randrange(0, len(Deck), 1)
         Next_Dealer_Card = Deck[Next_Dealer_Card_Index]
@@ -772,7 +776,7 @@ def showStats(correctwrong, winloss):
 
         TextSurf8, TextRect8 = displaytext("Totals", fontSize-15, width / 2, height/10+46*hspc, "center")
         if sum(winloss) != 0:
-            winpercent = "Win Percentage: " + str(winloss[0]/sum(winloss))
+            winpercent = "Win Percentage: " + str(round(winloss[0]/sum(winloss),3))
         else:
             winpercent = "Win Percentage: Pending"
         currentstreak = "Current Correct Call Streak: " + str(correctwrong[4])
