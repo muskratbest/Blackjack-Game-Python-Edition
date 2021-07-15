@@ -31,6 +31,7 @@ ab = (0, 0, 175)
 global numofdecks2
 numofdecks2 = 6
 
+
 def Shuffle(numofdecks, RunningCount):
     Jack = 10
     Queen = 10
