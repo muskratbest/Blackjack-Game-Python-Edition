@@ -1,0 +1,1304 @@
+import pygame
+import random
+import os
+from pygame import *
+
+# Initialize pygame package
+pygame.init()
+
+# creates the screen
+SIZE = WIDTH, HEIGHT = (800, 600)
+screen = pygame.display.set_mode(SIZE, pygame.RESIZABLE)
+width = screen.get_width()
+height = screen.get_height()
+
+# Title and Icon
+pygame.display.set_caption("Muskrat's Blackjack Training Game")
+icon = pygame.image.load(os.path.join('Cards', "Icon.png"))
+pygame.display.set_icon(icon)
+# Colors
+white = (255, 255, 255)  # white
+black = (0, 0, 0)  # black
+ic = (170, 170, 170)  # light button color
+ac = (100, 100, 100)  # dark button color
+ir = (255, 0, 0)
+ar = (175, 0, 0)
+ig = (0, 255, 0)
+ag = (0, 175, 0)
+ib = (0, 0, 255)
+ab = (0, 0, 175)
+
+
+def Shuffle(numofdecks, RunningCount):
+    Jack = 10
+    Queen = 10
+    King = 10
+    Ace = 11
+
+    RunningCount = 0
+    global Deck
+    Deck = [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 9, 9, 9, 9, 10, 10, 10,
+            10, Jack, Jack, Jack, Jack, Queen, Queen, Queen, Queen, King, King, King, King, Ace, Ace, Ace, Ace]
+    Deck1 = [2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 9, 9, 9, 9, 10, 10, 10,
+            10, Jack, Jack, Jack, Jack, Queen, Queen, Queen, Queen, King, King, King, King, Ace, Ace, Ace, Ace]
+    if numofdecks > 1:
+        appendflag = numofdecks - 1
+        while appendflag > 0:
+            Deck += Deck1
+            appendflag -= 1
+
+    original_length = len(Deck)
+    print("test", original_length)
+    return Deck, original_length, RunningCount
+
+
+def PlayAgain(Deck, numofdecks, RunningCount, dim):
+    First_Card_Index = random.randrange(0, len(Deck), 1)
+    First_Card = Deck[First_Card_Index]
+    while First_Card == 0:
+        if First_Card == 0:
+            First_Card_Index = random.randrange(0, len(Deck), 1)
+            First_Card = Deck[First_Card_Index]
+    Index[0] = First_Card_Index
+    # Get the Image
+    cflag = "player"
+    getImg(Index, dim, cflag)
+
+    CardFace1 = First_Card
+    CardFace1 = CardFace(numofdecks, First_Card_Index, CardFace1)  # Determines the Face of the Card if Jack-Ace
+
+    Deck[First_Card_Index] = 0
+
+    Dealer_Card_Index = random.randrange(0, len(Deck), 1)
+    Dealer_Card = Deck[Dealer_Card_Index]
+    while Dealer_Card == 0:
+        if Dealer_Card == 0:
+            Dealer_Card_Index = random.randrange(0, len(Deck), 1)
+            Dealer_Card = Deck[Dealer_Card_Index]
+    dIndex[0] = Dealer_Card_Index
+    # Get the Image
+    cflag = "dealer"
+    getImg(dIndex, dim, cflag)
+    CardFaceDealer1 = Dealer_Card
+
+    CardFaceDealer1 = CardFace(numofdecks, Dealer_Card_Index,
+                               CardFaceDealer1)  # Determines the Face of the Card if Jack-Ace
+
+    Deck[Dealer_Card_Index] = 0
+
+    Second_Card_Index = random.randrange(0, len(Deck), 1)
+    Second_Card = Deck[Second_Card_Index]
+    while Second_Card == 0:
+        if Second_Card == 0:
+            Second_Card_Index = random.randrange(0, len(Deck), 1)
+            Second_Card = Deck[Second_Card_Index]
+    Index.append(Second_Card_Index)
+    sIndex[0] = Second_Card_Index
+    # Get the Image
+    cflag = "player"
+    getImg(Index, dim, cflag)
+    cflag = "split"
+    getImg(sIndex, dim, cflag)
+
+    CardFace2 = Second_Card
+    CardFace2 = CardFace(numofdecks, Second_Card_Index, CardFace2)  # Determines the Face of the Card if Jack-Ace
+
+    Deck[Second_Card_Index] = 0
+
+    Second_Dealer_Card_Index = random.randrange(0, len(Deck), 1)
+    Second_Dealer_Card = Deck[Second_Dealer_Card_Index]
+    while Second_Dealer_Card == 0:
+        if Second_Dealer_Card == 0:
+            Second_Dealer_Card_Index = random.randrange(0, len(Deck), 1)
+            Second_Dealer_Card = Deck[Second_Dealer_Card_Index]
+    dIndex.append(Second_Dealer_Card_Index)
+    # Get the Image
+    cflag = "dealer"
+    getImg(dIndex, dim, cflag)
+    CardFaceDealer2 = Second_Dealer_Card
+
+    CardFaceDealer2 = CardFace(numofdecks, Second_Dealer_Card_Index,
+                               CardFaceDealer2)  # Determines the Face of the Card if Jack-Ace
+
+    Deck[Second_Dealer_Card_Index] = 0
+
+    CardFaces = [CardFace1, CardFace2, CardFaceDealer1, CardFaceDealer2]
+
+    Count = [First_Card, Second_Card, Dealer_Card, Second_Dealer_Card]
+    for i in Count:
+        if i in [2, 3, 4, 5, 6]:
+            RunningCount += 1
+        elif i in [10, 11]:
+            RunningCount -= 1
+    return First_Card, Second_Card, Dealer_Card, Second_Dealer_Card, CardFaces, RunningCount
+
+
+def CardFace(numofdecks, Index, CardFace):
+    j = numofdecks
+    if 35 + 52 * (j - 1) < Index < 40 + 52 * (j - 1):
+        CardFace = "Jack"
+    elif 39 + 52 * (j - 1) < Index < 44 + 52 * (j - 1):
+        CardFace = "Queen"
+    elif 43 + 52 * (j - 1) < Index < 48 + 52 * (j - 1):
+        CardFace = "King"
+    elif 47 + 52 * (j - 1) < Index < 52 + 52 * (j - 1):
+        CardFace = "Ace"
+    else:
+        CardFace = str(CardFace)
+    CardFace1 = CardFace
+    return CardFace1
+
+
+# Gameplay Loop
+def Blackjack():
+    # New Game Original Deck
+    streak = 0
+    longest_streak = 0
+    RunningCount = 0
+    correct_wrong_ratio = [0, 0, 0, 0, 0, 0]  # [RIGHT, WRONG, Correct Count, Incorrect Count, streak, longest_streak]
+    win_loss_ratio = [0, 0, 0]  # [win, loss, tie]
+    global numofdecks
+    numofdecks = 6
+    Deck, original_length, RunningCount = Shuffle(numofdecks, RunningCount)
+    actions = []
+    counter = 0
+    LeaveCasino = False
+    while LeaveCasino == False:
+        gameexit = False
+        Abort = False
+        EndGame = False
+        global pcards, dcards, scards, Index, dIndex, sIndex
+        pcards = pygame.sprite.Group()
+        dcards = pygame.sprite.Group()
+        scards = pygame.sprite.Group()
+        Index = [0]
+        dIndex = [0]
+        sIndex = [0]
+        width = screen.get_width()
+        height = screen.get_height()
+        # scale image
+        sh = round(height / 4)  # scale height
+        dim = [width, height, sh]
+        # Initialize New Hand
+        BlackjackFlag = 0
+        SplitFlag = 0
+        IdiotAlert = 0
+        biteme = 0
+        Next_Card = 0
+        Next_Dealer_Card = 0
+        Tot_Next_Card = 0
+        Tot_Next_Card1 = 0
+        Tot_Next_Card2 = 0
+        Tot_Next_Dealer_Card = 0
+        First_Card1 = 0
+        Second_Card1 = 0
+        Your_Sum1 = 0
+        First_Card2 = 0
+        Second_Card2 = 0
+        Your_Sum2 = 0
+        First_Card, Second_Card, Dealer_Card, Second_Dealer_Card, CardFaces, RunningCount = PlayAgain(Deck, numofdecks
+                                                                                                      , RunningCount, dim)
+        #
+        Your_Sum = First_Card + Second_Card
+
+        # Check for Blackjack
+        if Your_Sum == 21:
+            BlackjackFlag = 1
+            Abort = True  # You Have Blackjack
+        else:
+            # Check for an Idiot
+            if Your_Sum == 22:
+                IdiotAlert = 1  # You Have Two Aces
+        fontSize = 40
+        NewCards = ""
+        NewCards1 = ""
+        NewCards2 = ""
+        status = ""
+        statusSplit = ""
+        shuffle_status = ""
+        decision = ""
+        dookieshades = 0
+
+        if First_Card == 6 and Second_Card == 9:
+            status = "Nice."
+
+        while gameexit == False:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+                    return
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        quit()
+                        return
+            width = screen.get_width()
+            height = screen.get_height()
+            # scale image/ placements
+            sh = round(height / 4)  # scale height
+            bw = width*0.2325
+            bh = height*0.0833
+            wspc = width*0.014
+            hspc = height*0.014
+
+            dim = [width, height, sh]
+            #fill screen with color
+            screen.fill(white)
+            # Display the Image
+            pcards.draw(screen)
+            dcards.draw(screen)
+            if First_Card1 != 0:
+                scards.draw(screen)
+            TextSurf4, TextRect4 = displaytext(decision, fontSize, wspc, 3*hspc, "left")
+            TextSurf5, TextRect5 = displaytext(status, fontSize, wspc, 8*hspc, "left")
+            TextSurf6, TextRect6 = displaytext(statusSplit, fontSize, wspc, 13*hspc, "left")
+            TextSurf7, TextRect7 = displaytext(shuffle_status, fontSize, width/2, 8*hspc, "center")
+            screen.blit(TextSurf4, TextRect4)
+            screen.blit(TextSurf5, TextRect5)
+            screen.blit(TextSurf6, TextRect6)
+            screen.blit(TextSurf7, TextRect7)
+
+            if Tot_Next_Card == 0 and First_Card1 == 0:
+                dcI = ib
+                dcA = ab
+            else:
+                dcI = ic
+                dcA = ac
+            if Tot_Next_Card == 0 and CardFaces[0] == CardFaces[1] and First_Card1 == 0:
+                scI = ib
+                scA = ab
+            else:
+                scI = ic
+                scA = ac
+            if Abort == True:
+                stI = ic
+                stA = ac
+                htI = ic
+                htA = ac
+                scI = ic
+                scA = ac
+                dcI = ic
+                dcA = ac
+            else:
+                stI = ib
+                stA = ab
+                htI = ib
+                htA = ab
+            button("Stand", wspc, height-(bh+hspc), bw, bh, stI, stA, None)
+            button("Hit", 2 * wspc + bw, height - (bh+hspc), bw, bh, htI, htA, None)
+            button("Double", 3 * wspc + 2 * bw, height - (bh+hspc), bw, bh, dcI, dcA, None)
+            button("Split", 4 * wspc + 3 * bw, height - (bh+hspc), bw, bh, scI, scA, None)
+            stats = button("Menu", width-(bw+wspc)/2, hspc, bw/2, bh, ib, ab, settings)
+            if Abort == True:
+                button("Play Again?", (width+wspc)/4, height-2*(bh+hspc), (width-wspc)/2, bh, ig, ag, None)
+            pygame.display.flip()
+            for event in pygame.event.get():
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.quit()
+                        quit()
+                        return
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    stats = button("Menu", width-(bw+wspc)/2, hspc, bw/2, bh, ib, ab, settings)
+                    if stats == 1:
+                        showStats(correct_wrong_ratio, win_loss_ratio)
+                        counter -= 1
+
+                    if Abort == True:
+                        a5 = button("Play Again?", (width+wspc)/4, height-2*(bh+hspc), (width-wspc)/2, bh, ig, ag, Reset)
+                        pygame.display.flip()
+                        if a5 == "again":
+                            gameexit = True
+                            Abort = False
+                            EndGame = False
+                    elif Abort == False:
+                        a1 = button("Stand", wspc, height-(bh+hspc), bw, bh, stI, stA, stand)
+                        a2 = button("Hit", 2 * wspc + bw, height - (bh+hspc), bw, bh, htI, htA, hit)
+                        if Tot_Next_Card == 0 and SplitFlag == 0:
+                            dcI = ib
+                            dcA = ab
+                            actionD = double
+                        if Tot_Next_Card != 0 or First_Card1 != 0:
+                            dcI = ic
+                            dcA = ac
+                            actionD = None
+                        if Tot_Next_Card == 0 and CardFaces[0] == CardFaces[1]:
+                            scI = ib
+                            scA = ab
+                            actionS = split
+                        if CardFaces[0] != CardFaces[1] or First_Card1 != 0:
+                            scI = ic
+                            scA = ac
+                            actionS = None
+                        a3 = button("Double", 3 * wspc + 2 * bw, height - (bh + hspc), bw, bh, dcI, dcA, actionD)
+                        a4 = button("Split", 4 * wspc + 3 * bw, height - (bh + hspc), bw, bh, scI, scA, actionS)
+                        actions = [a1, a2, a3, a4]
+                        if CardFaces[0] == CardFaces[1] and Tot_Next_Card == 0 and a4 == "split":
+                            SplitFlag = 3
+
+
+                        if Tot_Next_Card != 0 and First_Card1 == 0:
+                            a3 = None
+                            a4 = None
+                            actions = [a1, a2, a3, a4]
+
+                        if CardFaces[0] != CardFaces[1] and First_Card1 == 0:
+                            a4 = None
+                            actions = [a1, a2, a3, a4]
+            for i in actions:
+                if i != None:
+                    wyd = i
+                    counter += 1
+                    actions = [None]*4
+
+                    if SplitFlag == 2:
+                        First_Card = First_Card1
+                        Second_Card = Second_Card1
+                        Tot_Next_Card = Tot_Next_Card1
+                    elif SplitFlag == 1 or SplitFlag == 0 and dookieshades == 1:
+                        status = ""
+                        First_Card = First_Card2
+                        Second_Card = Second_Card2
+                        Tot_Next_Card = Tot_Next_Card2
+
+                    cwflag, correct = eval(wyd, First_Card, Second_Card, Tot_Next_Card, Dealer_Card, CardFaces, SplitFlag, IdiotAlert)
+                    if cwflag == 1:
+                        correct_wrong_ratio[0] += 1
+                        correct_wrong_ratio[4] += 1
+                        if correct_wrong_ratio[4] > correct_wrong_ratio[5]:
+                            correct_wrong_ratio[5] = correct_wrong_ratio[4]
+                    elif cwflag == 0:
+                        correct_wrong_ratio[1] += 1
+                        correct_wrong_ratio[4] = 0
+                    if wyd == "split" and counter == 1 and CardFaces[0] == CardFaces[1] or SplitFlag > 0:
+                        if SplitFlag == 3:
+                            First_Card1 = First_Card
+                            Second_Card1, S1CF2, Second_Card1_Index = NextCard(dim, SplitFlag)
+                            Index[1] = Second_Card1_Index
+                            cflag = "player"
+                            getImg(Index, dim, cflag)
+                            Your_Sum1 = First_Card1 + Second_Card1
+
+                            First_Card2 = Second_Card
+                            Second_Card2, S2CF2, Second_Card2_Index = NextCard(dim, SplitFlag)
+                            sIndex.append(Second_Card2_Index)
+
+                            cflag = "split"
+                            getImg(sIndex, dim, cflag)
+                            Your_Sum2 = First_Card2 + Second_Card2
+                            SplitFlag -= 1
+                            if IdiotAlert == 1:
+                                wyd = "stand"
+
+                    if wyd == "stand":
+                        if SplitFlag == 0 or SplitFlag < 0 or IdiotAlert == 1 or SplitFlag == 1:
+                            First_Card1, Second_Card1, Next_Card, Tot_Next_Card1, Your_Sum1, biteme = \
+                                SomeoneHasAce(First_Card1, Second_Card1, Next_Card, Tot_Next_Card1, Your_Sum1, biteme)
+                            First_Card2, Second_Card2, Next_Card, Tot_Next_Card2, Your_Sum2, biteme = \
+                                SomeoneHasAce(First_Card2, Second_Card2, Next_Card, Tot_Next_Card, Your_Sum2, biteme)
+                            Abort = True
+                        if SplitFlag == 2:
+                            status = "Next Hand"
+                        SplitFlag -= 1
+
+                    elif wyd == "hit":
+                        Next_Card, CardFaceNext, unusedindex = NextCard(dim, SplitFlag)
+                        if SplitFlag == 2:
+                            NewCards1 += CardFaceNext
+                            Your_Sum1 += Next_Card
+                            Tot_Next_Card1 += Next_Card
+                            First_Card1, Second_Card1, Next_Card, Tot_Next_Card1, Your_Sum1, biteme = \
+                                SomeoneHasAce(First_Card1, Second_Card1, Next_Card, Tot_Next_Card1, Your_Sum1, biteme)
+                            print(Your_Sum1)
+                            if Your_Sum1 > 21 or Your_Sum1 == 21:  # Hand One Bust
+                                SplitFlag -= 1
+                                biteme = 0
+                                status = "Hand Two"
+                        elif SplitFlag == 1:
+                            NewCards2 += CardFaceNext
+                            Your_Sum2 += Next_Card
+                            Tot_Next_Card2 += Next_Card
+                            First_Card2, Second_Card2, Next_Card, Tot_Next_Card2, Your_Sum2, biteme = \
+                                SomeoneHasAce(First_Card2, Second_Card2, Next_Card, Tot_Next_Card, Your_Sum2, biteme)
+                            print(Your_Sum2)
+                            if Your_Sum2 > 21 or Your_Sum2 == 21:
+                                SplitFlag -= 1
+                        elif dookieshades == 0:
+                            Your_Sum += Next_Card
+                            NewCards += CardFaceNext
+                            Tot_Next_Card += Next_Card
+                            First_Card, Second_Card, Next_Card, Tot_Next_Card, Your_Sum, biteme = \
+                                SomeoneHasAce(First_Card, Second_Card, Next_Card, Tot_Next_Card, Your_Sum, biteme)
+
+                        if Your_Sum > 21 and SplitFlag == 0 or Your_Sum == 21 and SplitFlag == 0 or\
+                                Your_Sum2 == 21 and SplitFlag == 0 or Your_Sum2 > 21 and SplitFlag == 0:
+                            First_Card, Second_Card, Next_Card, Tot_Next_Card, Your_Sum, biteme = \
+                                SomeoneHasAce(First_Card, Second_Card, Next_Card, Tot_Next_Card, Your_Sum, biteme)
+                            if biteme == 0:
+                                Abort = True
+                                if SplitFlag == 2:
+                                    status = "Next Hand"
+                            else:
+                                Abort = False
+
+                    if wyd == "double" and counter == 1:
+                        Next_Card, CardFaceNext, unusedindex = NextCard(dim, SplitFlag)
+                        NewCards += CardFaceNext
+                        Your_Sum += Next_Card
+                        Tot_Next_Card += Next_Card
+
+                        First_Card, Second_Card, Next_Card, Tot_Next_Card, Your_Sum, biteme = \
+                            SomeoneHasAce(First_Card, Second_Card, Next_Card, Tot_Next_Card, Your_Sum, biteme)
+
+                        Abort = True
+
+                    if cwflag == 0:
+                        decision = "Wrong, the correct answer was: " + correct
+                    elif cwflag == 1:
+                        decision = "Correct!"
+
+            if Abort == True:
+                if EndGame == False:
+                    biteme = 0
+                    if Your_Sum1 > Your_Sum2 and Your_Sum1 != 0:
+                        Your_Sum = Your_Sum2
+                    elif Your_Sum2 > Your_Sum1 and Your_Sum1 != 0:
+                        Your_Sum = Your_Sum1
+                    elif Your_Sum1 == Your_Sum2 and Your_Sum1 != 0:
+                        Your_Sum = Your_Sum1
+                    dcards.add(scnddcard)
+                    dcards.remove(cardback)
+                    Dealer_Sum, Deck, Next_Dealer_Card, CardFaceDealerNext, Tot_Next_Dealer_Card, RunningCount = \
+                        Dealer(Dealer_Card, Second_Dealer_Card, Next_Dealer_Card, Tot_Next_Dealer_Card, Deck, numofdecks,
+                               Your_Sum, RunningCount, biteme, dim)
+                    if First_Card1 != 0:
+                        win_loss_ratio, status = DidYouWin(Your_Sum1, Dealer_Sum, win_loss_ratio, BlackjackFlag)
+                    if First_Card2 != 0:
+                        win_loss_ratio, statusSplit = DidYouWin(Your_Sum2, Dealer_Sum, win_loss_ratio, BlackjackFlag)
+                        statusSplit = "Second Hand: " + statusSplit
+                        status = "First Hand: " + status
+                    else:
+                        win_loss_ratio, status = DidYouWin(Your_Sum, Dealer_Sum, win_loss_ratio, BlackjackFlag)
+                    EndGame = True
+            if EndGame == True:
+                counter = 0
+                ShuffleFlag = 0
+                # Time to Shuffle Decks?
+                for i in range(len(Deck)):
+                        if Deck[i] == 0:
+                            ShuffleFlag += 1
+                if ShuffleFlag > 0.5 * original_length or numofdecks != numofdecks2:
+                    print("~ You notice that the deck has just been shuffled ~")
+                    shuffle_status = "~ The deck has been shuffled ~"
+                    numofdecks = numofdecks2
+                    Deck, original_length, RunningCount = Shuffle(numofdecks, RunningCount)
+                Abort = True
+
+
+def Reset():
+    reset = "again"
+    return reset
+
+
+def eval(What_You_Do, First_Card, Second_Card, Tot_Next_Card, Dealer_Card, CardFaces, SplitFlag, IdiotAlert):
+    Your_Sum = First_Card + Second_Card + Tot_Next_Card
+    if CardFaces[0] == CardFaces[1] and Tot_Next_Card == 0 and SplitFlag == 0:
+        if First_Card < 4:
+            if 3 < Dealer_Card < 8:
+                correct = "split"
+            else:
+                correct = "hit"
+        elif First_Card == 4:
+            correct = "hit"
+        elif First_Card == 5:
+            if Dealer_Card < 10:
+                correct = "double"
+            else:
+                correct = "hit"
+        elif First_Card == 6:
+            if Dealer_Card < 7:
+                correct = "split"
+            else:
+                correct = "hit"
+        elif First_Card == 7:
+            if Dealer_Card < 8:
+                correct = "split"
+            else:
+                correct = "hit"
+        elif First_Card == 9:
+            if Dealer_Card == 7 or Dealer_Card > 9:
+                correct = "stand"
+            else:
+                correct = "split"
+        elif First_Card == 10:
+            correct = "stand"
+        else:
+            correct = "split"
+    elif First_Card == 11 and Tot_Next_Card == 0 or Second_Card == 11 and Tot_Next_Card == 0:
+        if First_Card == 2 or Second_Card == 2:
+            if Dealer_Card == 5 or Dealer_Card == 6:
+                correct = "double"
+            else:
+                correct = "hit"
+        elif First_Card == 3 or Second_Card == 3 or First_Card == 4 or Second_Card == 4 or First_Card == 5 or Second_Card == 5:
+            if Dealer_Card == 4 or Dealer_Card == 5 or Dealer_Card == 6:
+                correct = "double"
+            else:
+                correct = "hit"
+        elif First_Card == 6 or Second_Card == 6:
+            if Dealer_Card == 3 or Dealer_Card == 4 or Dealer_Card == 5 or Dealer_Card == 6:
+                correct = "double"
+            else:
+                correct = "hit"
+        elif First_Card == 7 or Second_Card == 7:
+            if Dealer_Card < 7:
+                correct = "double"
+            elif Dealer_Card == 7 or Dealer_Card == 8:
+                correct = "stand"
+            else:
+                correct = "hit"
+        elif First_Card == 8 or Second_Card == 8:
+            if Dealer_Card == 6:
+                correct = "double"
+            else:
+                correct = "stand"
+        elif First_Card > 8 or Second_Card > 8:
+            correct = "stand"
+    else:  # No Ace and No Split Option
+        if Your_Sum < 9:
+            correct = "hit"
+
+        elif Your_Sum == 9:
+            if Dealer_Card < 7 and Tot_Next_Card == 0:
+                correct = "double"
+            else:
+                correct = "hit"
+        elif Your_Sum == 10:
+            if Dealer_Card < 10 and Tot_Next_Card == 0:
+                correct = "double"
+            else:
+                correct = "hit"
+        elif Your_Sum == 11:
+            if Tot_Next_Card == 0:
+                correct = "double"
+            else:
+                correct = "hit"
+        elif Your_Sum == 12:
+            if Dealer_Card == 4 or Dealer_Card == 5 or Dealer_Card == 6:
+                correct = "stand"
+            else:
+                correct = "hit"
+        elif Your_Sum > 16:
+            correct = "stand"
+        else:
+            if Dealer_Card < 7:
+                correct = "stand"
+            else:
+                correct = "hit"
+    if SplitFlag == 3 and IdiotAlert == 1:
+        correct = "split"
+    if correct == What_You_Do:
+        print("CORRECT")
+        cwflag = 1
+    else:
+        print("WRONG... The correct answer is *", correct, "*")
+        cwflag = 0
+    return cwflag, correct
+
+
+def SomeoneHasAce(Card1, Card2, CardNew, TotCardNew, CardSum, biteme):
+    abort = "NO"
+    AceFlag = 0
+    while abort != "YES":
+        for i in [Card1, Card2, CardNew]:
+            if i == 11 or biteme == 1:
+                AceFlag = 1
+        if AceFlag == 0:
+            abort = "YES"
+
+        while AceFlag != 0:
+            if Card1 == 11:
+                if CardSum > 21:
+                    Card1 = 1
+                    CardSum = Card1 + Card2 + TotCardNew
+            if Card2 == 11:
+                if CardSum > 21:
+                    Card2 = 1
+                    CardSum = Card1 + Card2 + TotCardNew
+            if CardNew == 11:
+                if CardSum > 21:
+                    CardNew = 1
+                    TotCardNew -= 10
+                    CardSum = Card1 + Card2 + TotCardNew
+                else:
+                    biteme += 1
+            if biteme != 0:
+                if CardSum > 21:
+                    TotCardNew -= 10
+                    CardSum = Card1 + Card2 + TotCardNew
+                    biteme -= 1
+            if CardSum < 22:
+                abort = "YES"
+                AceFlag = 0
+    return Card1, Card2, CardNew, TotCardNew, CardSum, biteme
+
+
+def Dealer(Dealer_Card, Second_Dealer_Card, Next_Dealer_Card, Tot_Next_Dealer_Card, Deck, numofdecks, Your_Sum,
+           RunningCount, biteme, dim):
+    Dealer_Sum = Dealer_Card + Second_Dealer_Card + Tot_Next_Dealer_Card
+    CardFaceDealerNext = ""
+    if Dealer_Card == 11 and Dealer_Sum == 17 or Second_Dealer_Card == 11 and Dealer_Sum == 17 or Next_Dealer_Card == 11 and Dealer_Sum == 17:
+        soft17 = 1
+    else:
+        soft17 = 0
+
+    while Dealer_Sum < 17 and Your_Sum < 22 or soft17 == 1 and Your_Sum < 22:
+        Next_Dealer_Card_Index = random.randrange(0, len(Deck), 1)
+        Next_Dealer_Card = Deck[Next_Dealer_Card_Index]
+        while Next_Dealer_Card == 0:
+            if Next_Dealer_Card == 0:
+                Next_Dealer_Card_Index = random.randrange(0, len(Deck), 1)
+                Next_Dealer_Card = Deck[Next_Dealer_Card_Index]
+        Tot_Next_Dealer_Card += Next_Dealer_Card
+        Dealer_Sum += Next_Dealer_Card
+        dIndex.append(Next_Dealer_Card_Index)
+        # Get the Image
+        cflag = "dealer"
+        getImg(dIndex, dim, cflag)
+        # Determines the Face of the Card if Jack-Ace
+        CardFaceDealerN = CardFace(numofdecks, Next_Dealer_Card_Index, Next_Dealer_Card)
+        CardFaceDealerNext += " and " + CardFaceDealerN
+        Deck[Next_Dealer_Card_Index] = 0
+
+        if Dealer_Card == 11 and Dealer_Sum == 17 or Second_Dealer_Card == 11 and Dealer_Sum == 17 or Next_Dealer_Card == 11 and Dealer_Sum == 17:
+            soft17 = 1
+        else:
+            soft17 = 0
+
+        Count = [Next_Dealer_Card]
+        for i in Count:
+            if i in [2, 3, 4, 5, 6]:
+                RunningCount += 1
+            elif i in [10, 11]:
+                RunningCount -= 1
+        Dealer_Card, Second_Dealer_Card, Next_Dealer_Card, Tot_Next_Dealer_Card, Dealer_Sum, biteme = SomeoneHasAce(
+            Dealer_Card, Second_Dealer_Card, Next_Dealer_Card, Tot_Next_Dealer_Card, Dealer_Sum, biteme)
+    return Dealer_Sum, Deck, Next_Dealer_Card, CardFaceDealerNext, Tot_Next_Dealer_Card, RunningCount
+
+
+def DidYouWin(Your_Sum, Dealer_Sum, win_loss_ratio, BlackjackFlag):
+    win = win_loss_ratio[0]
+    loss = win_loss_ratio[1]
+    tie = win_loss_ratio[2]
+    print("Dealer has ", Dealer_Sum, " You have ", Your_Sum)
+    if Your_Sum > 21:
+        status = "BUST!"
+        loss += 1
+    elif Dealer_Sum == 21:
+        if BlackjackFlag == 1:
+            status = "PUSH!"
+            tie += 1
+        else:
+            status = "LOSER!"
+            loss += 1
+    elif BlackjackFlag == 1:
+        status = "BLACKJACK!"
+        win += 1
+    elif Dealer_Sum > 21 or Your_Sum > Dealer_Sum:
+        status = "You Win!"
+        win += 1
+    elif Dealer_Sum == Your_Sum:
+        status = "PUSH!"
+        tie += 1
+    else:
+        status = "You Lose!"
+        loss += 1
+    win_loss_ratio = [win, loss, tie]
+    return win_loss_ratio, status
+
+
+def showStats(correctwrong, winloss):
+    gameexit = False
+    while not gameexit:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+                return
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return
+            elif esc == 1:
+                return
+        # fill screen with color
+        width = screen.get_width()
+        height = screen.get_height()
+        bw = width * 0.1
+        bh = height * 0.0833
+        wspc = width * 0.014
+        hspc = height * 0.014
+        screen.fill(white)
+        fontSize = 70
+        text = "Check Out Your Stats!"
+        TextSurf, TextRect = displaytext(text, fontSize, width/2, 3*hspc, "center")
+        screen.blit(TextSurf, TextRect)
+
+        # Decisions
+        TextSurf1, TextRect1 = displaytext("DECISIONS", fontSize-15, width/2, height/10+5*hspc, "center")
+        correctcalls = "Your CORRECT decisions: " + str(correctwrong[0])
+        incorrectcalls = "Your INCORRECT decisions: " + str(correctwrong[1])
+        TextSurf2, TextRect2 = displaytext(correctcalls, fontSize-30, width/2, height/10+10*hspc, "center")
+        TextSurf3, TextRect3 = displaytext(incorrectcalls, fontSize-30, width/2, height/10+15*hspc, "center")
+        screen.blit(TextSurf1, TextRect1)
+        screen.blit(TextSurf2, TextRect2)
+        screen.blit(TextSurf3, TextRect3)
+
+        # Win/ Loss
+        TextSurf4, TextRect4 = displaytext("Wins & Losses", fontSize-15, width / 2, height/10+23*hspc, "center")
+        winners = "Your wins: " + str(winloss[0])
+        losers = "Your losses: " + str(winloss[1])
+        tires = "Your ties: " + str(winloss[2])
+        TextSurf5, TextRect5 = displaytext(winners, fontSize-30, width/2, height/10+28*hspc, "center")
+        TextSurf6, TextRect6 = displaytext(losers, fontSize-30, width/2, height/10+33*hspc, "center")
+        TextSurf7, TextRect7 = displaytext(tires, fontSize-30, width/2, height/10+38*hspc, "center")
+
+        screen.blit(TextSurf4, TextRect4)
+        screen.blit(TextSurf5, TextRect5)
+        screen.blit(TextSurf6, TextRect6)
+        screen.blit(TextSurf7, TextRect7)
+
+        TextSurf8, TextRect8 = displaytext("Totals", fontSize-15, width / 2, height/10+46*hspc, "center")
+        if sum(winloss) != 0:
+            winpercent = "Win Percentage: " + str(winloss[0]/sum(winloss))
+        else:
+            winpercent = "Win Percentage: Pending"
+        currentstreak = "Current Correct Call Streak: " + str(correctwrong[4])
+        longeststreak = "Longest Correct Call Streak: " + str(correctwrong[5])
+        TextSurf9, TextRect9 = displaytext(winpercent, fontSize-30, width/2, height/10+51*hspc, "center")
+        TextSurf10, TextRect10 = displaytext(currentstreak, fontSize-30, width/2, height/10+56*hspc, "center")
+        TextSurf11, TextRect11 = displaytext(longeststreak, fontSize-30, width/2, height/10+61*hspc, "center")
+
+        screen.blit(TextSurf8, TextRect8)
+        screen.blit(TextSurf9, TextRect9)
+        screen.blit(TextSurf10, TextRect10)
+        screen.blit(TextSurf11, TextRect11)
+
+
+        esc = button("Back", wspc, hspc, bw, bh, ic, ac, back)
+        pygame.display.flip()
+
+
+def stand():
+    move = 'stand'
+    return move
+
+
+def hit():
+    move = 'hit'
+    return move
+
+
+def NextCard(dim, SplitFlag):
+    Next_Card_Index = random.randrange(0, len(Deck), 1)
+    Next_Card = Deck[Next_Card_Index]
+    while Next_Card == 0:
+        if Next_Card == 0:
+            Next_Card_Index = random.randrange(0, len(Deck), 1)
+            Next_Card = Deck[Next_Card_Index]
+    if SplitFlag == 1:
+        sIndex.append(Next_Card_Index)
+        cflag = "split"
+        getImg(sIndex, dim, cflag)
+    elif SplitFlag != 3 and SplitFlag != 1:
+        Index.append(Next_Card_Index)
+        cflag = "player"
+        getImg(Index, dim, cflag)
+
+    CardFaceNext = CardFace(numofdecks, Next_Card_Index, Next_Card)  # Determines the Face of the Card if Jack-Ace
+
+    Deck[Next_Card_Index] = 0
+    print("Your Next Card is ", CardFaceNext)
+    if CardFaceNext == 0:
+        CardFaceNext = ""
+    if CardFaceNext != "":
+        CardFaceNext = " and " + CardFaceNext
+
+    return Next_Card, CardFaceNext, Next_Card_Index
+
+
+def double():
+    move = 'double'
+    return move
+
+
+def split():
+    move = 'split'
+    return move
+
+
+class card(pygame.sprite.Sprite):
+    def __init__(self, Image, cardnum, dim, cflag):
+        super().__init__()
+        # load image
+        self.pic = pygame.image.load(os.path.join('Cards', Image)).convert()
+        # scale image
+        sh = dim[2]  # scale height
+        sw = round(0.785*sh)  # scale width
+        self.scale = pygame.transform.scale(self.pic, (sw, sh))
+        # position image
+        cropL = 0.15625 * sw
+        cropT = 0.0625 * sh
+        cropR = 0.6875 * sw
+        cropB = 0.875 * sh
+        self.image = self.scale.subsurface((cropL, cropT, cropR, cropB))
+        self.rect = self.image.get_rect()
+        cardw = sw - cropL - cropR
+        cardh = sh - cropT - cropB
+        if cflag == "player":
+            self.rect.center = (dim[0]/2+2*cardnum*cardw, dim[1]/1.3-5*cardnum*cardh)
+        if cflag == "split":
+            self.rect.center = (dim[0]/1.5+2*cardnum*cardw, dim[1]/1.3-5*cardnum*cardh)
+        if cflag == "dealer":
+            self.rect.center = (dim[0]/2.5+2*cardnum*cardw, dim[1]/2-5*cardnum*cardh)
+
+class titlescreen(pygame.sprite.Sprite):
+    def __init__(self, Image, dim):
+        super().__init__()
+        # load image
+        self.pic = pygame.image.load(os.path.join('Cards', Image)).convert()
+        # scale image
+        sh = dim[1]
+        sw = dim[0]  # scale width
+        self.scale = pygame.transform.scale(self.pic, (sw, sh))
+        # position image
+        self.image = self.scale
+        self.rect = self.image.get_rect()
+        self.rect.center = (dim[0]/2, dim[1]/2)
+
+
+def getImg(Index, dim, cflag):
+    if Index != None:
+        for index in Index:
+            for j in range(1,numofdecks+1):
+                if index == 0 + 52 * (j - 1):
+                    Image = "2S.png"
+                elif index == 1 + 52 * (j - 1):
+                    Image = "2C.png"
+                elif index == 2 + 52 * (j - 1):
+                    Image = "2D.png"
+                elif index == 3 + 52 * (j - 1):
+                    Image = "2H.png"
+                elif index == 4 + 52 * (j - 1):
+                    Image = "3S.png"
+                elif index == 5 + 52 * (j - 1):
+                    Image = "3C.png"
+                elif index == 6 + 52 * (j - 1):
+                    Image = "3D.png"
+                elif index == 7 + 52 * (j - 1):
+                    Image = "3H.png"
+                elif index == 8 + 52 * (j - 1):
+                    Image = "4S.png"
+                elif index == 9 + 52 * (j - 1):
+                    Image = "4C.png"
+                elif index == 10 + 52 * (j - 1):
+                    Image = "4D.png"
+                elif index == 11 + 52 * (j - 1):
+                    Image = "4H.png"
+                elif index == 12 + 52 * (j - 1):
+                    Image = "5S.png"
+                elif index == 13 + 52 * (j - 1):
+                    Image = "5C.png"
+                elif index == 14 + 52 * (j - 1):
+                    Image = "5D.png"
+                elif index == 15 + 52 * (j - 1):
+                    Image = "5H.png"
+                elif index == 16 + 52 * (j - 1):
+                    Image = "6S.png"
+                elif index == 17 + 52 * (j - 1):
+                    Image = "6C.png"
+                elif index == 18 + 52 * (j - 1):
+                    Image = "6D.png"
+                elif index == 19 + 52 * (j - 1):
+                    Image = "6H.png"
+                elif index == 20 + 52 * (j - 1):
+                    Image = "7S.png"
+                elif index == 21 + 52 * (j - 1):
+                    Image = "7C.png"
+                elif index == 22 + 52 * (j - 1):
+                    Image = "7D.png"
+                elif index == 23 + 52 * (j - 1):
+                    Image = "7H.png"
+                elif index == 24 + 52 * (j - 1):
+                    Image = "8S.png"
+                elif index == 25 + 52 * (j - 1):
+                    Image = "8C.png"
+                elif index == 26 + 52 * (j - 1):
+                    Image = "8D.png"
+                elif index == 27 + 52 * (j - 1):
+                    Image = "8H.png"
+                elif index == 28 + 52 * (j - 1):
+                    Image = "9S.png"
+                elif index == 29 + 52 * (j - 1):
+                    Image = "9C.png"
+                elif index == 30 + 52 * (j - 1):
+                    Image = "9D.png"
+                elif index == 31 + 52 * (j - 1):
+                    Image = "9H.png"
+                elif index == 32 + 52 * (j - 1):
+                    Image = "10S.png"
+                elif index == 33 + 52 * (j - 1):
+                    Image = "10C.png"
+                elif index == 34 + 52 * (j - 1):
+                    Image = "10D.png"
+                elif index == 35 + 52 * (j - 1):
+                    Image = "10H.png"
+                elif index == 36 + 52 * (j - 1):
+                    Image = "JS.png"
+                elif index == 37 + 52 * (j - 1):
+                    Image = "JC.png"
+                elif index == 38 + 52 * (j - 1):
+                    Image = "JD.png"
+                elif index == 39 + 52 * (j - 1):
+                    Image = "JH.png"
+                elif index == 40 + 52 * (j - 1):
+                    Image = "QS.png"
+                elif index == 41 + 52 * (j - 1):
+                    Image = "QC.png"
+                elif index == 42 + 52 * (j - 1):
+                    Image = "QD.png"
+                elif index == 43 + 52 * (j - 1):
+                    Image = "QH.png"
+                elif index == 44 + 52 * (j - 1):
+                    Image = "KS.png"
+                elif index == 45 + 52 * (j - 1):
+                    Image = "KC.png"
+                elif index == 46 + 52 * (j - 1):
+                    Image = "KD.png"
+                elif index == 47 + 52 * (j - 1):
+                    Image = "KH.png"
+                elif index == 48 + 52 * (j - 1):
+                    Image = "AS.png"
+                elif index == 49 + 52 * (j - 1):
+                    Image = "AC.png"
+                elif index == 50 + 52 * (j - 1):
+                    Image = "AD.png"
+                elif index == 51 + 52 * (j - 1):
+                    Image = "AH.png"
+
+        cardnum = len(Index) - 1
+
+        # fill screen with color
+        screen.fill(white)
+
+        # position image
+        cards = card(Image, cardnum, dim, cflag)
+
+        if cflag == "player":
+            pcards.add(cards)
+        if cflag == "dealer":
+            if cardnum == 1:
+                global cardback,  scnddcard
+                cardback = card("CardBack.png", cardnum, dim, cflag)
+                dcards.add(cardback)
+                scnddcard = cards
+            else:
+                dcards.add(cards)
+        if cflag == "split":
+            scards.add(cards)
+
+
+def settings():
+    gameexit = False
+    rectangle_draging = False
+
+    width = screen.get_width()
+    height = screen.get_height()
+
+    sleft = 1 / 16 * width
+    sTop = height * (0.80)
+    swidth = (7 / 8) * width
+    sheight = 0.05 * height
+    moverW = 0.075 * height
+    moverH = moverW
+
+    div = 1 / 24
+
+    if numofdecks == 1:
+        Num = 0
+    elif numofdecks == 2:
+        Num = 3*div
+    elif numofdecks == 3:
+        Num = 6*div
+    elif numofdecks == 4:
+        Num = 9*div
+    elif numofdecks == 5:
+        Num = 12*div
+    elif numofdecks == 6:
+        Num = 15*div
+    elif numofdecks == 7:
+        Num = 18*div
+    elif numofdecks == 8:
+        Num = 21*div
+    elif numofdecks == 9:
+        Num = 24*div
+
+    rectangle = pygame.rect.Rect(sleft + swidth * Num - moverW / 2, sTop - moverH / 4, moverW, moverH)
+
+    num = 0
+
+    while not gameexit:
+        width = screen.get_width()
+        height = screen.get_height()
+
+        sleft = 1 / 16 * width
+        sTop = height * (0.80)
+        swidth = (7 / 8) * width
+        sheight = 0.05 * height
+        moverW = 0.075 * height
+        moverH = moverW
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+                return
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return
+            elif esc == 1:
+                return
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if rectangle.collidepoint(event.pos):
+                        rectangle_dragging = True
+                        mouse_x, mouse_y = event.pos
+                        offset_x = rectangle.x - mouse_x
+                        offset_y = rectangle.y - mouse_y
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    rectangle_dragging = False
+                    if sleft <= rectangle.x <= sleft + 1.5*div * swidth or \
+                        rectangle.x <= sleft:
+                        rectangle.x = sleft - moverW / 2
+                        rectangle.y = sTop - moverH / 6
+                        num = 1
+                    elif sleft + 1.5*div * swidth <= rectangle.x <= sleft + 3*div*swidth or \
+                            sleft + 3*div * swidth <= rectangle.x <= sleft + 4.5*div*swidth:
+                        rectangle.x = sleft + swidth * 3*div - moverW / 2
+                        rectangle.y = sTop - moverH / 6
+                        num = 2
+                    elif sleft + swidth * 4.5*div <= rectangle.x <= sleft + 6*div*swidth or \
+                            sleft + swidth * 6*div <= rectangle.x <= sleft + 7.5*div*swidth:
+                        rectangle.x = sleft + swidth * 6*div - moverW / 2
+                        rectangle.y = sTop - moverH / 6
+                        num = 3
+                    elif sleft + swidth * 7.5*div <= rectangle.x <= sleft + 9*div*swidth or \
+                            sleft + swidth * 9*div <= rectangle.x <= sleft + 10.5*div*swidth:
+                        rectangle.x = sleft + swidth * 9*div - moverW / 2
+                        rectangle.y = sTop - moverH / 6
+                        num = 4
+                    elif sleft + 10.5*div*swidth <= rectangle.x <= sleft + 12*div * swidth or \
+                            sleft + 12*div*swidth <= rectangle.x <= sleft + 13.5*div * swidth:
+                        rectangle.x = sleft + swidth * 12*div - moverW / 2
+                        rectangle.y = sTop - moverH / 6
+                        num = 5
+                    elif sleft + 13.5*div * swidth <= rectangle.x <= sleft + 15*div * swidth or \
+                            sleft + 15*div * swidth <= rectangle.x <= sleft + 16.5*div * swidth:
+                        rectangle.x = sleft + swidth * 15*div - moverW / 2
+                        rectangle.y = sTop - moverH / 6
+                        num = 6
+                    elif sleft + swidth * 16.5*div <= rectangle.x <= sleft + swidth * 18*div or \
+                            sleft + swidth * 18*div <= rectangle.x <= sleft + swidth * 19.5*div:
+                        rectangle.x = sleft + swidth * 18*div - moverW / 2
+                        rectangle.y = sTop - moverH / 6
+                        num = 7
+                    elif sleft + swidth * 19.5*div <= rectangle.x <= sleft + swidth*21*div or \
+                            sleft + swidth * 21*div <= rectangle.x <= sleft + swidth*22.5*div:
+                        rectangle.x = sleft + swidth * 21*div - moverW / 2
+                        rectangle.y = sTop - moverH / 6
+                        num = 8
+                    elif sleft + swidth * 22.5*div <= rectangle.x <= sleft + swidth*24*div or \
+                            sleft + swidth * 24*div <= rectangle.x:
+                        rectangle.x = sleft + swidth * 24*div - moverW / 2
+                        rectangle.y = sTop - moverH / 6
+                        num = 9
+            elif event.type == pygame.MOUSEMOTION and sleft <= event.pos[0] <= sleft + swidth:
+                if rectangle_dragging:
+                    mouse_x, mouse_y = event.pos
+                    rectangle.x = mouse_x + offset_x
+                    rectangle.y = sTop - moverH / 6
+        bw = width * 0.2
+        bh = height * 0.1
+        wspc = width * 0.014
+        hspc = height * 0.014
+        screen.fill(white)
+        fontSize = 80
+        text = "MENU"
+        TextSurf, TextRect = displaytext(text, fontSize, width/2, 8*hspc, "center")
+        screen.blit(TextSurf, TextRect)
+        stats = button("Stats", width/2 - bw/2, height/4, bw, bh, ib, ab, seestats)
+        if stats == 1:
+            return stats
+        button("Chart", width/2 - bw/2, height/4 + bh+hspc, bw, bh, ib, ab, SeeChart)
+        esc = button("Back", wspc, hspc, bw/2, bh, ic, ac, back)
+
+        pygame.draw.rect(screen, black, [sleft, sTop, swidth, sheight])
+        pygame.draw.rect(screen, black, [sleft, sTop - sheight, 5, 3 * sheight])
+        TextSurf1, TextRect1 = displaytext("1", 30, sleft, sTop - 1.75 * sheight, "center")
+        pygame.draw.rect(screen, black, [sleft + swidth * 3*div, sTop - sheight, 5, 3 * sheight])
+        TextSurf2, TextRect2 = displaytext("2", 30, sleft + swidth * 3*div, sTop - 1.75 * sheight, "center")
+        pygame.draw.rect(screen, black, [sleft + swidth * 6*div, sTop - sheight, 5, 3 * sheight])
+        TextSurf3, TextRect3 = displaytext("3", 30, sleft + swidth * 6*div, sTop - 1.75 * sheight, "center")
+        pygame.draw.rect(screen, black, [sleft + swidth * 9*div, sTop - sheight, 5, 3 * sheight])
+        TextSurf4, TextRect4 = displaytext("4", 30, sleft + swidth * 9*div, sTop - 1.75 * sheight, "center")
+        pygame.draw.rect(screen, black, [sleft + swidth * 12*div, sTop - sheight, 5, 3 * sheight])
+        TextSurf5, TextRect5 = displaytext("5", 30, sleft + swidth * 12*div, sTop - 1.75 * sheight, "center")
+        pygame.draw.rect(screen, black, [sleft + swidth * 15*div, sTop - sheight, 5, 3 * sheight])
+        TextSurf6, TextRect6 = displaytext("6", 30, sleft + swidth * 15*div, sTop - 1.75 * sheight, "center")
+        pygame.draw.rect(screen, black, [sleft + swidth * 18*div, sTop - sheight, 5, 3 * sheight])
+        TextSurf7, TextRect7 = displaytext("7", 30, sleft + swidth * 18*div, sTop - 1.75 * sheight, "center")
+        pygame.draw.rect(screen, black, [sleft + swidth * 21*div, sTop - sheight, 5, 3 * sheight])
+        TextSurf8, TextRect8 = displaytext("8", 30, sleft + swidth * 21*div, sTop - 1.75 * sheight, "center")
+        pygame.draw.rect(screen, black, [sleft + swidth * 24*div, sTop - sheight, 5, 3 * sheight])
+        TextSurf9, TextRect9 = displaytext("9", 30, sleft + swidth * 24*div, sTop - 1.75 * sheight, "center")
+
+        pygame.draw.rect(screen, black, [sleft + swidth * 0.875, sTop - sheight, 5, 3 * sheight])
+        pygame.draw.rect(screen, ar, rectangle)
+
+        screen.blit(TextSurf1, TextRect1)
+        screen.blit(TextSurf2, TextRect2)
+        screen.blit(TextSurf3, TextRect3)
+        screen.blit(TextSurf4, TextRect4)
+        screen.blit(TextSurf5, TextRect5)
+        screen.blit(TextSurf6, TextRect6)
+        screen.blit(TextSurf7, TextRect7)
+        screen.blit(TextSurf8, TextRect8)
+        screen.blit(TextSurf9, TextRect9)
+
+        TextSurfNoD, TextRectNoD = displaytext("Number of Decks:", 50, sleft + swidth / 2, sTop - 3 * sheight, "center")
+        screen.blit(TextSurfNoD, TextRectNoD)
+
+        global numofdecks2
+        numofdecks2 = num
+        pygame.display.flip()
+
+
+def back():
+    esc = 1
+    return esc
+
+
+def seestats():
+    stats = 1
+    return stats
+
+
+def SeeChart():
+    gameexit = False
+    while not gameexit:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+                return
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return
+            elif esc == 1:
+                return
+        width = screen.get_width()
+        height = screen.get_height()
+        bw = width * 0.2
+        bh = height * 0.0833
+        wspc = width * 0.014
+        hspc = height * 0.014
+        dim = [width, height]
+        chart = titlescreen("BSChart.png", dim)
+        BSChart = pygame.sprite.Group()
+        BSChart.add(chart)
+        BSChart.draw(screen)
+        esc = button("Back", 0, 0, bw/1.2, bh, ic, ac, back)
+        pygame.display.flip()
+
+
+def text_objects(text, font, color):
+    textSurface = font.render(text, True, color)
+    return textSurface, textSurface.get_rect()
+
+
+def displaytext(text, fontSize, w, h, local):
+    # Store the width/ height of the screen
+    mediumText = pygame.font.SysFont('arial', fontSize)
+    TextSurf, TextRect = text_objects(text, mediumText, black)
+
+    if local == "left":
+        TextRect.midleft = (w, h)
+    if local == "center":
+        TextRect.center = (w,h)
+
+    return TextSurf, TextRect
+
+
+def button(text, bleft, btop, bwidth, bheight, ic, ac, action=None):
+    pygame.init()
+    # stores the (x,y) coords into variable as a tuple
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed(3)
+    # if mouse hovers button, become lighter
+    if bleft <= mouse[0] <= bleft + bwidth and btop <= mouse[1] <= btop + bheight:
+        pygame.draw.rect(screen, ic, [bleft, btop, bwidth, bheight])
+        if click[0] == 1 and action != None:
+            result = action()
+            return result
+    else:
+        pygame.draw.rect(screen, ac, [bleft, btop, bwidth, bheight])
+
+    # superimposing the text onto our button
+    fontSize = round(35) # gotta make this adjust with screen size change
+    smallfont = pygame.font.SysFont('arial', fontSize)
+    textSurf, textRect = text_objects(text, smallfont, white)
+    textRect.center = ((bleft + bwidth/2), (btop + bheight/2))
+    screen.blit(textSurf, textRect)
+
+
+# Game Loop
+def menu():
+    pygame.init()
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+                return
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    quit()
+                    return
+        width = screen.get_width()
+        height = screen.get_height()
+        # fill screen with color
+        screen.fill(white)
+        dim = [width, height]
+        title = titlescreen("AppIcon.png", dim)
+        Titlescreen = pygame.sprite.Group()
+        Titlescreen.add(title)
+        Titlescreen.draw(screen)
+
+        bw = width*0.1
+        bh = height*0.06
+        wspc = width*0.014
+        hspc = height*0.014
+        button("Deal Me In!", width/2-(bw+100)/2, height-70, bw+100, bh+30, ig, ag, Blackjack)
+        button("Quit", width-(bw+wspc/2), 4.5*bh, bw, bh, ir, ar, quit)
+
+        # update the frames of the game
+        pygame.display.flip()
+
+
+menu()
+pygame.quit()
+quit()
