@@ -28,6 +28,8 @@ ag = (0, 175, 0)
 ib = (0, 0, 255)
 ab = (0, 0, 175)
 
+global numofdecks2
+numofdecks2 = 6
 
 def Shuffle(numofdecks, RunningCount):
     Jack = 10
@@ -48,7 +50,6 @@ def Shuffle(numofdecks, RunningCount):
             appendflag -= 1
 
     original_length = len(Deck)
-    print("test", original_length)
     return Deck, original_length, RunningCount
 
 
