@@ -70,7 +70,7 @@ def PlayAgain(Deck, numofdecks, RunningCount, dim):
 
     Deck[First_Card_Index] = 0
 
-    Dealer_Card_Index = 50 #random.randrange(0, len(Deck), 1)
+    Dealer_Card_Index = random.randrange(0, len(Deck), 1)
     Dealer_Card = Deck[Dealer_Card_Index]
     while Dealer_Card == 0:
         if Dealer_Card == 0:
@@ -106,7 +106,7 @@ def PlayAgain(Deck, numofdecks, RunningCount, dim):
 
     Deck[Second_Card_Index] = 0
 
-    Second_Dealer_Card_Index = 51# random.randrange(0, len(Deck), 1)
+    Second_Dealer_Card_Index = random.randrange(0, len(Deck), 1)
     Second_Dealer_Card = Deck[Second_Dealer_Card_Index]
     while Second_Dealer_Card == 0:
         if Second_Dealer_Card == 0:
