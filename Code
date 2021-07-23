@@ -166,12 +166,12 @@ def Blackjack():
     frequency = 0
     Deck, original_length, RunningCount = Shuffle(numofdecks, RunningCount)
     actions = []
-    counter = 0
     LeaveCasino = False
     while LeaveCasino == False:
         Abort = False
         EndGame = False
         pop = False
+        counter = 0
         global pcards, dcards, scards, Index, dIndex, sIndex
         pcards = pygame.sprite.Group()
         dcards = pygame.sprite.Group()
@@ -306,7 +306,6 @@ def Blackjack():
             stats = button("Menu", width-(bw+wspc)/2, hspc, bw/2, bh, ib, ab, settings)
             if stats == 1:
                 showStats(correct_wrong_ratio, win_loss_ratio)
-                counter -= 1
             if numofdecks != numofdecks2:
                 print("~ You notice that the deck has just been shuffled ~")
                 shuffle_status = "~ The deck has been shuffled ~"
@@ -345,7 +344,6 @@ def Blackjack():
                     stats = button("Menu", width-(bw+wspc)/2, hspc, bw/2, bh, ib, ab, settings)
                     if stats == 1:
                         showStats(correct_wrong_ratio, win_loss_ratio)
-                        counter -= 1
 
                     if Abort == True:
                         if pop == True and lock != 1:
@@ -431,13 +429,13 @@ def Blackjack():
 
             pygame.display.flip()
 
-
+            print("pre", counter)
             for i in actions:
                 if i != None:
                     wyd = i
                     counter += 1
                     actions = [None]*4
-
+                    print("post", counter)
                     if SplitFlag == 2:
                         First_Card = First_Card1
                         Second_Card = Second_Card1
@@ -532,6 +530,7 @@ def Blackjack():
                                 Abort = False
 
                     if wyd == "double" and counter == 1:
+                        print("Test")
                         Next_Card, CardFaceNext, unusedindex, RunningCount = NextCard(dim, SplitFlag, RunningCount)
                         NewCards += CardFaceNext
                         Your_Sum += Next_Card
