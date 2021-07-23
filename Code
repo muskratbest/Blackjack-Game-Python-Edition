@@ -8,6 +8,7 @@ pygame.init()
 
 # creates the screen
 SIZE = WIDTH, HEIGHT = (800, 600)
+global screen
 screen = pygame.display.set_mode(SIZE, pygame.RESIZABLE)
 width = screen.get_width()
 height = screen.get_height()
@@ -30,6 +31,8 @@ ab = (0, 0, 175)
 
 global numofdecks2
 numofdecks2 = 6
+global freq2
+freq2 = 0
 
 def Shuffle(numofdecks, RunningCount):
     Jack = 10
@@ -153,21 +156,22 @@ def CardFace(numofdecks, Index, CardFace):
 # Gameplay Loop
 def Blackjack():
     # New Game Original Deck
-    streak = 0
-    longest_streak = 0
     RunningCount = 0
-    correct_wrong_ratio = [0, 0, 0, 0, 0, 0]  # [RIGHT, WRONG, Correct Count, Incorrect Count, streak, longest_streak]
+    # [RIGHT, WRONG, Correct Count, Incorrect Count, streak, longest_streak, ccount, wcount, scount, lscount]
+    correct_wrong_ratio = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     win_loss_ratio = [0, 0, 0]  # [win, loss, tie]
     global numofdecks
     numofdecks = 6
+    global frequency
+    frequency = 0
     Deck, original_length, RunningCount = Shuffle(numofdecks, RunningCount)
     actions = []
     counter = 0
     LeaveCasino = False
     while LeaveCasino == False:
-        gameexit = False
         Abort = False
         EndGame = False
+        pop = False
         global pcards, dcards, scards, Index, dIndex, sIndex
         pcards = pygame.sprite.Group()
         dcards = pygame.sprite.Group()
@@ -197,10 +201,20 @@ def Blackjack():
         First_Card2 = 0
         Second_Card2 = 0
         Your_Sum2 = 0
+
+        num = 0
+        numstring = "0"
+        popQuiz = pygame.sprite.Group()
+        lock = 0
+        once = 0
+        once2 = 0
+        shuffled = 0
+
         First_Card, Second_Card, Dealer_Card, Second_Dealer_Card, CardFaces, RunningCount = PlayAgain(Deck, numofdecks
                                                                                                       , RunningCount, dim)
-        #
+        # This might be redundant
         Your_Sum = First_Card + Second_Card
+        Dealer_Sum = Dealer_Card + Second_Dealer_Card
 
         # Check for Blackjack
         if Your_Sum == 21:
@@ -218,12 +232,13 @@ def Blackjack():
         statusSplit = ""
         shuffle_status = ""
         decision = ""
+        display2 = ""
         dookieshades = 0
 
         if First_Card == 6 and Second_Card == 9:
             status = "Nice."
-
-        while gameexit == False:
+        gameexit = False
+        while not gameexit:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
@@ -231,9 +246,8 @@ def Blackjack():
                     return
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        pygame.quit()
-                        quit()
                         return
+
             width = screen.get_width()
             height = screen.get_height()
             # scale image/ placements
@@ -242,7 +256,6 @@ def Blackjack():
             bh = height*0.0833
             wspc = width*0.014
             hspc = height*0.014
-
             dim = [width, height, sh]
             #fill screen with color
             screen.fill(white)
@@ -291,11 +304,39 @@ def Blackjack():
             button("Double", 3 * wspc + 2 * bw, height - (bh+hspc), bw, bh, dcI, dcA, None)
             button("Split", 4 * wspc + 3 * bw, height - (bh+hspc), bw, bh, scI, scA, None)
             stats = button("Menu", width-(bw+wspc)/2, hspc, bw/2, bh, ib, ab, settings)
+            if stats == 1:
+                showStats(correct_wrong_ratio, win_loss_ratio)
+                counter -= 1
+            if numofdecks != numofdecks2:
+                print("~ You notice that the deck has just been shuffled ~")
+                shuffle_status = "~ The deck has been shuffled ~"
+                numofdecks = numofdecks2
+                Deck, original_length, RunningCount = Shuffle(numofdecks, RunningCount)
+                pop = False
+                shuffled += 1
+            if frequency != freq2:
+                frequency = freq2
+
+            lowheight = 2 * height / 3 + 0.01666*height
+            highheight = 2 * height / 3 + 0.0666*height
+            upleft = width*0.0125
+            upright = 0.05*width
+            dwnleft = width/3 - width*0.025
+            dwnright = width/3 +width*0.0125
+
+            if pop == True:
+                trianglebutton("up", lowheight, highheight, upleft, (upleft + upright) / 2, upright, ar, ir, None)
+                trianglebutton("down", lowheight, highheight, dwnleft, (dwnleft + dwnright) / 2, dwnright, ar, ir, None)
+                button("Lock In", 0.0625*width, 2*height/3+hspc, bw, bh, ib, ab, None)
+
             if Abort == True:
                 button("Play Again?", (width+wspc)/4, height-2*(bh+hspc), (width-wspc)/2, bh, ig, ag, None)
-            pygame.display.flip()
             for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+                    return
+                elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         pygame.quit()
                         quit()
@@ -307,6 +348,16 @@ def Blackjack():
                         counter -= 1
 
                     if Abort == True:
+                        if pop == True and lock != 1:
+                            up = trianglebutton("up", lowheight, highheight, upleft, (upleft + upright) / 2, upright, ar, ir, countUp)
+                            if up != None and lock != 1:
+                                num += up
+                            down = trianglebutton("down", lowheight, highheight, dwnleft, (dwnleft + dwnright) / 2, dwnright, ar, ir, countDown)
+                            if down != None and lock != 1:
+                                num += down
+                            numstring = str(num)
+                            lock = button("Lock In", 0.0625*width, 2 * height / 3 + hspc, bw, bh, ib, ab, lockin)
+
                         a5 = button("Play Again?", (width+wspc)/4, height-2*(bh+hspc), (width-wspc)/2, bh, ig, ag, Reset)
                         pygame.display.flip()
                         if a5 == "again":
@@ -347,6 +398,40 @@ def Blackjack():
                         if CardFaces[0] != CardFaces[1] and First_Card1 == 0:
                             a4 = None
                             actions = [a1, a2, a3, a4]
+
+            if pop == True:
+                box = quiz("popquiz.png", dim)
+                popQuiz.add(box)
+                popQuiz.draw(screen)
+                popQuiz.remove(box)
+                display = numstring
+                font = 120
+                font2 = 50
+                if lock == 1 and once != 0.5:
+                    lockedin = num
+                    if lockedin == RunningCount:
+                        display2 = "Correct"
+                        correct_wrong_ratio[6] += 1
+                        correct_wrong_ratio[8] += 1
+                        if correct_wrong_ratio[8] > correct_wrong_ratio[9]:
+                            correct_wrong_ratio[9] = correct_wrong_ratio[8]
+                        once = 0.5
+
+                    else:
+                        display2 = "Wrong, it's: " + str(RunningCount)
+                        correct_wrong_ratio[7] += 1
+                        correct_wrong_ratio[8] = 0
+                        once = 0.5
+
+
+                popSurf, popRect = displaytext(display, font, width/5-0.025*width, height / 2, "center")
+                screen.blit(popSurf, popRect)
+                popSurf2, popRect2 = displaytext(display2, font2, width/5-0.025*width, height / 2-height/5-0.01666*height, "center")
+                screen.blit(popSurf2, popRect2)
+
+            pygame.display.flip()
+
+
             for i in actions:
                 if i != None:
                     wyd = i
@@ -375,14 +460,14 @@ def Blackjack():
                     if wyd == "split" and counter == 1 and CardFaces[0] == CardFaces[1] or SplitFlag > 0:
                         if SplitFlag == 3:
                             First_Card1 = First_Card
-                            Second_Card1, S1CF2, Second_Card1_Index = NextCard(dim, SplitFlag)
+                            Second_Card1, S1CF2, Second_Card1_Index, RunningCount = NextCard(dim, SplitFlag, RunningCount)
                             Index[1] = Second_Card1_Index
                             cflag = "player"
                             getImg(Index, dim, cflag)
                             Your_Sum1 = First_Card1 + Second_Card1
 
                             First_Card2 = Second_Card
-                            Second_Card2, S2CF2, Second_Card2_Index = NextCard(dim, SplitFlag)
+                            Second_Card2, S2CF2, Second_Card2_Index, RunningCount = NextCard(dim, SplitFlag, RunningCount)
                             sIndex.append(Second_Card2_Index)
 
                             cflag = "split"
@@ -393,6 +478,9 @@ def Blackjack():
                                 wyd = "stand"
 
                     if wyd == "stand":
+                        if IdiotAlert == 1:
+                            First_Card, Second_Card, Next_Card, Tot_Next_Card, Your_Sum, biteme = \
+                                SomeoneHasAce(First_Card, Second_Card, Next_Card, Tot_Next_Card, Your_Sum, biteme)
                         if SplitFlag == 0 or SplitFlag < 0 or IdiotAlert == 1 or SplitFlag == 1:
                             First_Card1, Second_Card1, Next_Card, Tot_Next_Card1, Your_Sum1, biteme = \
                                 SomeoneHasAce(First_Card1, Second_Card1, Next_Card, Tot_Next_Card1, Your_Sum1, biteme)
@@ -404,7 +492,7 @@ def Blackjack():
                         SplitFlag -= 1
 
                     elif wyd == "hit":
-                        Next_Card, CardFaceNext, unusedindex = NextCard(dim, SplitFlag)
+                        Next_Card, CardFaceNext, unusedindex, RunningCount = NextCard(dim, SplitFlag, RunningCount)
                         if SplitFlag == 2:
                             NewCards1 += CardFaceNext
                             Your_Sum1 += Next_Card
@@ -444,7 +532,7 @@ def Blackjack():
                                 Abort = False
 
                     if wyd == "double" and counter == 1:
-                        Next_Card, CardFaceNext, unusedindex = NextCard(dim, SplitFlag)
+                        Next_Card, CardFaceNext, unusedindex, RunningCount = NextCard(dim, SplitFlag, RunningCount)
                         NewCards += CardFaceNext
                         Your_Sum += Next_Card
                         Tot_Next_Card += Next_Card
@@ -484,7 +572,6 @@ def Blackjack():
                         win_loss_ratio, status = DidYouWin(Your_Sum, Dealer_Sum, win_loss_ratio, BlackjackFlag)
                     EndGame = True
             if EndGame == True:
-                counter = 0
                 ShuffleFlag = 0
                 # Time to Shuffle Decks?
                 for i in range(len(Deck)):
@@ -495,6 +582,23 @@ def Blackjack():
                     shuffle_status = "~ The deck has been shuffled ~"
                     numofdecks = numofdecks2
                     Deck, original_length, RunningCount = Shuffle(numofdecks, RunningCount)
+                    pop = False
+                    shuffled += 1
+                elif shuffled == 0:
+                    always = False
+                    never = False
+                    frequency = freq2
+                    Activate = -1
+                    if frequency == 0:
+                        never = True
+                    elif frequency == 6:
+                        always = True
+                    else:
+                        if once2 == 0:
+                            Activate = random.randrange(0, frequency, 1)
+                            once2 = 0.5
+                    if Activate == 1 and never != True or always == True and never != True:
+                        pop = True
                 Abort = True
 
 
@@ -505,7 +609,7 @@ def Reset():
 
 def eval(What_You_Do, First_Card, Second_Card, Tot_Next_Card, Dealer_Card, CardFaces, SplitFlag, IdiotAlert):
     Your_Sum = First_Card + Second_Card + Tot_Next_Card
-    if CardFaces[0] == CardFaces[1] and Tot_Next_Card == 0 and SplitFlag == 0:
+    if CardFaces[0] == CardFaces[1] and Tot_Next_Card == 0 and SplitFlag == 3 or IdiotAlert == 1:
         if First_Card < 4:
             if 3 < Dealer_Card < 8:
                 correct = "split"
@@ -570,7 +674,6 @@ def eval(What_You_Do, First_Card, Second_Card, Tot_Next_Card, Dealer_Card, CardF
     else:  # No Ace and No Split Option
         if Your_Sum < 9:
             correct = "hit"
-
         elif Your_Sum == 9:
             if Dealer_Card < 7 and Tot_Next_Card == 0:
                 correct = "double"
@@ -745,15 +848,15 @@ def showStats(correctwrong, winloss):
         wspc = width * 0.014
         hspc = height * 0.014
         screen.fill(white)
-        fontSize = 70
+        fontSize = 60
         text = "Check Out Your Stats!"
         TextSurf, TextRect = displaytext(text, fontSize, width/2, 3*hspc, "center")
         screen.blit(TextSurf, TextRect)
 
         # Decisions
         TextSurf1, TextRect1 = displaytext("DECISIONS", fontSize-15, width/2, height/10+5*hspc, "center")
-        correctcalls = "Your CORRECT decisions: " + str(correctwrong[0])
-        incorrectcalls = "Your INCORRECT decisions: " + str(correctwrong[1])
+        correctcalls = "Your CORRECT decisions: " + str(correctwrong[0]) + " | CORRECT Count quizzes: " + str(correctwrong[6])
+        incorrectcalls = "Your INCORRECT decisions: " + str(correctwrong[1]) + " | INCORRECT Count quizzes: " + str(correctwrong[7])
         TextSurf2, TextRect2 = displaytext(correctcalls, fontSize-30, width/2, height/10+10*hspc, "center")
         TextSurf3, TextRect3 = displaytext(incorrectcalls, fontSize-30, width/2, height/10+15*hspc, "center")
         screen.blit(TextSurf1, TextRect1)
@@ -779,8 +882,8 @@ def showStats(correctwrong, winloss):
             winpercent = "Win Percentage: " + str(round(winloss[0]/sum(winloss),3))
         else:
             winpercent = "Win Percentage: Pending"
-        currentstreak = "Current Correct Call Streak: " + str(correctwrong[4])
-        longeststreak = "Longest Correct Call Streak: " + str(correctwrong[5])
+        currentstreak = "Current Correct Call Streak: " + str(correctwrong[4]) + " | Correct Count Streak: " + str(correctwrong[8])
+        longeststreak = "Longest Correct Call Streak: " + str(correctwrong[5]) + " | Longest Correct Count Streak: " + str(correctwrong[9])
         TextSurf9, TextRect9 = displaytext(winpercent, fontSize-30, width/2, height/10+51*hspc, "center")
         TextSurf10, TextRect10 = displaytext(currentstreak, fontSize-30, width/2, height/10+56*hspc, "center")
         TextSurf11, TextRect11 = displaytext(longeststreak, fontSize-30, width/2, height/10+61*hspc, "center")
@@ -805,7 +908,7 @@ def hit():
     return move
 
 
-def NextCard(dim, SplitFlag):
+def NextCard(dim, SplitFlag, RunningCount):
     Next_Card_Index = random.randrange(0, len(Deck), 1)
     Next_Card = Deck[Next_Card_Index]
     while Next_Card == 0:
@@ -830,7 +933,14 @@ def NextCard(dim, SplitFlag):
     if CardFaceNext != "":
         CardFaceNext = " and " + CardFaceNext
 
-    return Next_Card, CardFaceNext, Next_Card_Index
+    Count = [Next_Card]
+    for i in Count:
+        if i in [2, 3, 4, 5, 6]:
+            RunningCount += 1
+        elif i in [10, 11]:
+            RunningCount -= 1
+
+    return Next_Card, CardFaceNext, Next_Card_Index, RunningCount
 
 
 def double():
@@ -1016,15 +1126,14 @@ def getImg(Index, dim, cflag):
 
 def settings():
     gameexit = False
-    rectangle_draging = False
 
     width = screen.get_width()
     height = screen.get_height()
 
+    # For Number of Decks
     sleft = 1 / 16 * width
-    sTop = height * (0.80)
+    sTop = height * (0.6)
     swidth = (7 / 8) * width
-    sheight = 0.05 * height
     moverW = 0.075 * height
     moverH = moverW
 
@@ -1053,16 +1162,50 @@ def settings():
 
     num = 0
 
+
+    # For Pop Quiz Frequency
+    sleft2 = 1 / 16 * width
+    sTop2 = height * (0.89)
+    swidth2 = (7 / 8) * width
+    moverW2 = 0.075 * height
+    moverH2 = moverW2
+
+    div2 = 1 / 12
+
+    if frequency == 0:
+        Numpop = 0
+    elif frequency == 10:
+        Numpop = 3 * div2
+    elif frequency == 5:
+        Numpop = 6 * div2
+    elif frequency == 3:
+        Numpop = 9 * div2
+    elif frequency == 6:
+        Numpop = 12 * div2
+
+    rectangle2 = pygame.rect.Rect(sleft2 + swidth2 * Numpop - moverW2 / 2, sTop2 - moverH2 / 4, moverW2, moverH2)
+
+    numpop = 0
+
     while not gameexit:
         width = screen.get_width()
         height = screen.get_height()
 
+        # For Number of Decks
         sleft = 1 / 16 * width
-        sTop = height * (0.80)
+        sTop = height * (0.6)
         swidth = (7 / 8) * width
         sheight = 0.05 * height
         moverW = 0.075 * height
         moverH = moverW
+
+        # For Pop Quiz Frequency
+        sleft2 = 1 / 16 * width
+        sTop2 = height * (0.89)
+        swidth2 = (7 / 8) * width
+        sheight2 = 0.05 * height
+        moverW2 = 0.075 * height
+        moverH2 = moverW2
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -1081,9 +1224,13 @@ def settings():
                         rectangle_dragging = True
                         mouse_x, mouse_y = event.pos
                         offset_x = rectangle.x - mouse_x
-                        offset_y = rectangle.y - mouse_y
+                    if rectangle2.collidepoint(event.pos):
+                        rectangle_dragging2 = True
+                        mouse_x, mouse_y = event.pos
+                        offset_x = rectangle2.x - mouse_x
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
+                    # For Number of Decks
                     rectangle_dragging = False
                     if sleft <= rectangle.x <= sleft + 1.5*div * swidth or \
                         rectangle.x <= sleft:
@@ -1130,26 +1277,62 @@ def settings():
                         rectangle.x = sleft + swidth * 24*div - moverW / 2
                         rectangle.y = sTop - moverH / 6
                         num = 9
+
+                    # For Pop Quiz Frequency
+                    rectangle_dragging2 = False
+                    if sleft2 <= rectangle2.x <= sleft2 + 1.5 * div2 * swidth2 or \
+                            rectangle2.x <= sleft2:
+                        rectangle2.x = sleft2 - moverW2 / 2
+                        rectangle2.y = sTop2 - moverH2 / 6
+                        numpop = 0
+                    elif sleft2 + 1.5 * div2 * swidth2 <= rectangle2.x <= sleft2 + 3 * div2 * swidth2 or \
+                            sleft2 + 3 * div2 * swidth2 <= rectangle2.x <= sleft2 + 4.5 * div2 * swidth2:
+                        rectangle2.x = sleft2 + swidth2 * 3 * div2 - moverW2 / 2
+                        rectangle2.y = sTop2 - moverH2 / 6
+                        numpop = 10
+                    elif sleft2 + swidth2 * 4.5 * div2 <= rectangle2.x <= sleft2 + 6 * div2 * swidth2 or \
+                            sleft2 + swidth2 * 6 * div2 <= rectangle2.x <= sleft2 + 7.5 * div2 * swidth2:
+                        rectangle2.x = sleft2 + swidth2 * 6 * div2 - moverW2 / 2
+                        rectangle2.y = sTop2 - moverH2 / 6
+                        numpop = 5
+                    elif sleft2 + swidth2 * 7.5 * div2 <= rectangle2.x <= sleft2 + 9 * div2 * swidth2 or \
+                            sleft2 + swidth2 * 9 * div2 <= rectangle2.x <= sleft2 + 10.5 * div2 * swidth2:
+                        rectangle2.x = sleft2 + swidth2 * 9 * div2 - moverW2 / 2
+                        rectangle2.y = sTop2 - moverH2 / 6
+                        numpop = 3
+                    elif sleft2 + 10.5 * div2 * swidth2 <= rectangle2.x <= sleft2 + 12 * div2 * swidth2 or \
+                            sleft2 + 12 * div2 * swidth2 <= rectangle2.x <= sleft2 + 13.5 * div2 * swidth2:
+                        rectangle2.x = sleft2 + swidth2 * 12 * div2 - moverW2 / 2
+                        rectangle2.y = sTop2 - moverH2 / 6
+                        numpop = 6
             elif event.type == pygame.MOUSEMOTION and sleft <= event.pos[0] <= sleft + swidth:
                 if rectangle_dragging:
                     mouse_x, mouse_y = event.pos
                     rectangle.x = mouse_x + offset_x
                     rectangle.y = sTop - moverH / 6
+
+                if rectangle_dragging2:
+                    mouse_x, mouse_y = event.pos
+                    rectangle2.x = mouse_x + offset_x
+                    rectangle2.y = sTop2 - moverH2 / 6
         bw = width * 0.2
         bh = height * 0.1
         wspc = width * 0.014
         hspc = height * 0.014
         screen.fill(white)
-        fontSize = 80
+        fontSize = 50
         text = "MENU"
-        TextSurf, TextRect = displaytext(text, fontSize, width/2, 8*hspc, "center")
+        TextSurf, TextRect = displaytext(text, fontSize, width/2, 4*hspc, "center")
         screen.blit(TextSurf, TextRect)
-        stats = button("Stats", width/2 - bw/2, height/4, bw, bh, ib, ab, seestats)
+        stats = button("Stats", width/2 - bw/2, height/13+hspc, bw, bh, ib, ab, seestats)
         if stats == 1:
             return stats
-        button("Chart", width/2 - bw/2, height/4 + bh+hspc, bw, bh, ib, ab, SeeChart)
+        button("Chart", width/2 - bw/2, height/13 + bh+2*hspc, bw, bh, ib, ab, SeeChart)
+        button("House Rules", width/2 - bw/2-bw/14, height/13 + 2*bh+3*hspc, bw+bw/7, bh, ib, ab, HouseRules)
+
         esc = button("Back", wspc, hspc, bw/2, bh, ic, ac, back)
 
+        # For Number of Decks
         pygame.draw.rect(screen, black, [sleft, sTop, swidth, sheight])
         pygame.draw.rect(screen, black, [sleft, sTop - sheight, 5, 3 * sheight])
         TextSurf1, TextRect1 = displaytext("1", 30, sleft, sTop - 1.75 * sheight, "center")
@@ -1170,6 +1353,20 @@ def settings():
         pygame.draw.rect(screen, black, [sleft + swidth * 24*div, sTop - sheight, 5, 3 * sheight])
         TextSurf9, TextRect9 = displaytext("9", 30, sleft + swidth * 24*div, sTop - 1.75 * sheight, "center")
 
+        # For Pop Quiz Frequency
+        pygame.draw.rect(screen, black, [sleft2, sTop2, swidth2, sheight2])
+        pygame.draw.rect(screen, black, [sleft2, sTop2 - sheight2, 5, 3 * sheight2])
+        Textpop1, TextSrfpop1 = displaytext("Never", 30, sleft2, sTop2 - 1.75 * sheight2, "center")
+        pygame.draw.rect(screen, black, [sleft2 + swidth2 * 3 * div2, sTop2 - sheight2, 5, 3 * sheight2])
+        Textpop2, TextSrfpop2 = displaytext("Infrequent", 30, sleft2 + swidth2 * 3 * div2, sTop2 - 1.75 * sheight2, "center")
+        pygame.draw.rect(screen, black, [sleft2 + swidth2 * 6 * div2, sTop2 - sheight2, 5, 3 * sheight2])
+        Textpop3, TextSrfpop3 = displaytext("Frequent", 30, sleft2 + swidth2 * 6 * div2, sTop2 - 1.75 * sheight2, "center")
+        pygame.draw.rect(screen, black, [sleft2 + swidth2 * 9 * div2, sTop2 - sheight2, 5, 3 * sheight2])
+        Textpop4, TextSrfpop4 = displaytext("Very Frequent", 30, sleft2 + swidth2 * 9 * div2, sTop2 - 1.75 * sheight2, "center")
+        pygame.draw.rect(screen, black, [sleft2 + swidth2 * 12 * div2, sTop2 - sheight2, 5, 3 * sheight2])
+        Textpop5, TextSrfpop5 = displaytext("Always", 30, sleft2 + swidth2 * 12 * div2, sTop2 - 1.75 * sheight2, "center")
+
+        # For Number of Decks
         pygame.draw.rect(screen, black, [sleft + swidth * 0.875, sTop - sheight, 5, 3 * sheight])
         pygame.draw.rect(screen, ar, rectangle)
 
@@ -1183,12 +1380,58 @@ def settings():
         screen.blit(TextSurf8, TextRect8)
         screen.blit(TextSurf9, TextRect9)
 
-        TextSurfNoD, TextRectNoD = displaytext("Number of Decks:", 50, sleft + swidth / 2, sTop - 3 * sheight, "center")
+        TextSurfNoD, TextRectNoD = displaytext("Number of Decks:", 30, sleft + swidth / 2, sTop - 3 * sheight, "center")
         screen.blit(TextSurfNoD, TextRectNoD)
+
+        # For Pop Quiz Frequency
+        pygame.draw.rect(screen, ar, rectangle2)
+
+        screen.blit(Textpop1, TextSrfpop1)
+        screen.blit(Textpop2, TextSrfpop2)
+        screen.blit(Textpop3, TextSrfpop3)
+        screen.blit(Textpop4, TextSrfpop4)
+        screen.blit(Textpop5, TextSrfpop5)
+
+        TextSurfPoP, TextRectPoP = displaytext("Card Counting Pop-Quiz Frequency:", 30, sleft2 + swidth2 / 2,
+                                               sTop2 - 3 * sheight2, "center")
+        screen.blit(TextSurfPoP, TextRectPoP)
 
         global numofdecks2
         numofdecks2 = num
+
+        global freq2
+        freq2 = numpop
+
         pygame.display.flip()
+
+class quiz(pygame.sprite.Sprite):
+    def __init__(self, Image, dim):
+        super().__init__()
+        # load image
+        self.pic = pygame.image.load(os.path.join('Cards', Image)).convert()
+        # scale image
+        sh = round(dim[1]/3)
+        sw = round(dim[0]/3)  # scale width
+        self.scale = pygame.transform.scale(self.pic, (sw, sh))
+        # position image
+        self.image = self.scale
+        self.rect = self.image.get_rect()
+        self.rect.midleft = (10, dim[1]/2)
+
+
+def countUp():
+    val = 1
+    return val
+
+
+def countDown():
+    val = -1
+    return val
+
+
+def lockin():
+    lock = 1
+    return lock
 
 
 def back():
@@ -1229,6 +1472,33 @@ def SeeChart():
         pygame.display.flip()
 
 
+
+def HouseRules():
+    gameexit = False
+    while not gameexit:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+                return
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    return
+            elif esc == 1:
+                return
+        width = screen.get_width()
+        height = screen.get_height()
+        bw = width * 0.2
+        bh = height * 0.0833
+        dim = [width, height]
+        DaRulz = titlescreen("HouseRules.png", dim)
+        HausRulz = pygame.sprite.Group()
+        HausRulz.add(DaRulz)
+        HausRulz.draw(screen)
+        esc = button("Back", 0, 0, bw/1.2, bh, ic, ac, back)
+        pygame.display.flip()
+
+
 def text_objects(text, font, color):
     textSurface = font.render(text, True, color)
     return textSurface, textSurface.get_rect()
@@ -1241,8 +1511,10 @@ def displaytext(text, fontSize, w, h, local):
 
     if local == "left":
         TextRect.midleft = (w, h)
+    if local == "right":
+        TextRect.midright = (w, h)
     if local == "center":
-        TextRect.center = (w,h)
+        TextRect.center = (w, h)
 
     return TextSurf, TextRect
 
@@ -1267,6 +1539,28 @@ def button(text, bleft, btop, bwidth, bheight, ic, ac, action=None):
     textSurf, textRect = text_objects(text, smallfont, white)
     textRect.center = ((bleft + bwidth/2), (btop + bheight/2))
     screen.blit(textSurf, textRect)
+
+
+def trianglebutton(flag, lowheight, highheight, left, mid, right, ac, ic, action=None):
+    pygame.init()
+    # stores the (x,y) coords into variable as a tuple
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed(3)
+    # if mouse hovers button, become lighter
+    if left <= mouse[0] <= right and lowheight <= mouse[1] <= highheight:
+        if flag == "up":
+            pygame.draw.polygon(screen, ic, [(left,highheight), (mid,lowheight), (right, highheight)])
+        elif flag == "down":
+            pygame.draw.polygon(screen, ic, [(left,lowheight), (mid,highheight), (right, lowheight)])
+
+        if click[0] == 1 and action != None:
+            result = action()
+            return result
+    else:
+        if flag == "up":
+            pygame.draw.polygon(screen, ac, [(left,highheight), (mid,lowheight), (right, highheight)])
+        elif flag == "down":
+            pygame.draw.polygon(screen, ac, [(left,lowheight), (mid,highheight), (right, lowheight)])
 
 
 # Game Loop
@@ -1297,7 +1591,6 @@ def menu():
         bw = width*0.1
         bh = height*0.06
         wspc = width*0.014
-        hspc = height*0.014
         button("Deal Me In!", width/2-(bw+100)/2, height-70, bw+100, bh+30, ig, ag, Blackjack)
         button("Quit", width-(bw+wspc/2), 4.5*bh, bw, bh, ir, ar, quit)
 
@@ -1306,5 +1599,5 @@ def menu():
 
 
 menu()
-pygame.quit()
 quit()
+pygame.quit()
